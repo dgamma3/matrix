@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<script src="CCapture.all.min.js"></script>
 <meta charset="utf-8" />
 <body
   style="
@@ -11,14 +12,53 @@
     margin: 0;
     padding: 0;
   "
->
-  <canvas
+><a class="button" href="#" id="start-capturing-button" >Start recording</a>
+<a class="button" href="#" id="download-video-button" >Stop recording and view capture</a>
+
+<canvas
     id="canvas"
     style="width: 100%; height: 100%; padding: 0; margin: 0;"
   ></canvas>
+    <script>
+      var capturer;
+      var sCB = document.getElementById( 'start-capturing-button' ),
+              dVB = document.getElementById( 'download-video-button' ),
+              progress = document.getElementById( 'progress' );
 
-  <script>
+      sCB.addEventListener( 'click', function( e ) {
+
+        var framerate = "60";
+
+        capturer = new CCapture( {
+          verbose: false,
+          display: true,
+          framerate: framerate,
+          motionBlurFrames: ( 960 / framerate ) * ( 0 ),
+          quality: 99,
+          format: "png",
+          workersPath: '../../src/',
+          timeLimit: 4,
+          frameLimit: 0,
+          autoSaveTime: 0,
+          onProgress: function( p ) { progress.style.width = ( p * 100 ) + '%' }
+        } );
+
+        capturer.start();
+        this.style.display = 'none';
+        dVB.style.display = 'block';
+        e.preventDefault();
+      }, false );
+
+      dVB.addEventListener( 'click', function( e ) {
+        capturer.stop();
+        this.style.display = 'none';
+        //this.setAttribute( 'href',  );
+        capturer.save();
+      }, false );
+
     const canvas = document.getElementById("canvas");
+
+
     const c = canvas.getContext("2d");
 
     const fontHeight = 14;
@@ -61,7 +101,7 @@
       }
       return out;
     };
-    const universe = makeUniverse(1000);
+    const universe = makeUniverse(1);
 
     let w;
     let h;
@@ -118,11 +158,11 @@
         universeAt: Math.floor(Math.random() * universe.length),
         headAt: headAt,
         speed: speed,
-        length: Math.floor(Math.random() * streaks * charsOnCol) + 8
+        length:5
       };
     };
 
-    const trails = [];
+    const trails =[];
 
     const clear = () => {
       c.fillStyle = "black";
@@ -291,9 +331,13 @@
         drawTrail(trail);
       }
 
+      if( capturer ) capturer.capture( canvas );
       requestAnimationFrame(tick);
+
+
     };
 
     requestAnimationFrame(init);
+
   </script>
 </body>
